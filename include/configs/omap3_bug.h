@@ -347,8 +347,8 @@
  */
 
 #define CONFIG_PREBOOT                  /* enable preboot variable */
-#define CONFIG_BOOTDELAY	3
-#define CONFIG_BOOTCOMMAND	"run mmcboot"
+#define CONFIG_BOOTDELAY	1
+#define CONFIG_BOOTCOMMAND	"run mmcboot; run shutdown"
 #define CONFIG_AUTO_COMPLETE	1	/* TBD */
 #define CONFIG_SYS_MAXARGS	16	/* max number of command args */ /* TBD */
 
@@ -359,10 +359,11 @@
 #define CONFIG_EXTRA_ENV_SETTINGS \
   "console=ttyS2,115200n8\0" \
   "mmcboot=mmc init;ext2load mmc 0:1 0x80000000 /boot/uImage;" \
-	"run mmcargs;bootm 0x80000000\0"\
+  "run mmcargs;bootm 0x80000000\0"\
   "mmcargs=setenv bootargs smsc95xx.mac=${ethaddr} console=${console} " \
-	"root=/dev/mmcblk0p1 rw rootwait rootdelay=1 " \
-	"kgdboc=${console} usbcore.autosuspend=-1 \0"
+  "root=/dev/mmcblk0p1 rw rootwait rootdelay=1 " \
+  "kgdboc=${console} usbcore.autosuspend=-1 \0"
+  "shutdown=i2c mw 4b 46 41 1\0"
 
 #ifndef __ASSEMBLY__
 extern struct gpmc *gpmc_cfg;
