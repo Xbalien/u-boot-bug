@@ -36,6 +36,7 @@
 #include <i2c.h>
 #include <asm/mach-types.h>
 #include "bug.h"
+#include <twl4030.h>
 
 /*
  * Routine: board_init
@@ -69,8 +70,13 @@ int misc_init_r(void)
 	setup_net_chip();
 #endif
 
-	dieid_num_r();
+	twl4030_pmrecv_vsel_cfg(TWL4030_PM_RECEIVER_VAUX2_DEDICATED,
+					TWL4030_PM_RECEIVER_VAUX2_VSEL_18,
+					TWL4030_PM_RECEIVER_VAUX2_DEV_GRP,
+					TWL4030_PM_RECEIVER_DEV_GRP_P1);
+	twl4030_power_init();
 
+	dieid_num_r();
 	return 0;
 }
 
