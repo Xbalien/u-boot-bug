@@ -347,7 +347,7 @@
  */
 
 #define CONFIG_PREBOOT                  /* enable preboot variable */
-#define CONFIG_BOOTDELAY	3
+#define CONFIG_BOOTDELAY	1
 #define CONFIG_BOOTCOMMAND	"run mmcboot; run confcmd; run shutdown"
 #define CONFIG_AUTO_COMPLETE	1	/* TBD */
 #define CONFIG_SYS_MAXARGS	16	/* max number of command args */ /* TBD */
