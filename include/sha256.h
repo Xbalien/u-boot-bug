@@ -12,5 +12,6 @@ typedef struct {
 void sha256_starts(sha256_context * ctx);
 void sha256_update(sha256_context * ctx, uint8_t * input, uint32_t length);
 void sha256_finish(sha256_context * ctx, uint8_t digest[SHA256_SUM_LEN]);
+void sha256_csum (unsigned char *input, int ilen, unsigned char output[32]);
 
 #endif /* _SHA256_H */

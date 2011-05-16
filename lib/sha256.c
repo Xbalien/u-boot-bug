@@ -260,3 +260,16 @@ void sha256_finish(sha256_context * ctx, uint8_t digest[32])
 	PUT_UINT32_BE(ctx->state[6], digest, 24);
 	PUT_UINT32_BE(ctx->state[7], digest, 28);
 }
+
+/*
+ * Output = SHA-256( input buffer )
+ */
+void sha256_csum (unsigned char *input, int ilen, unsigned char output[32])
+{
+	sha256_context ctx;
+
+	sha256_starts (&ctx);
+	sha256_update (&ctx, input, ilen);
+	sha256_finish (&ctx, output);
+}
+
