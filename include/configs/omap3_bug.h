@@ -247,6 +247,12 @@
 #define CONFIG_SYS_PTV			2  /* 2^(pvt+1) */
 #define CONFIG_SYS_HZ			1000
 
+/*
+ *  SHA256 Checksums
+ */
+
+#define CONFIG_SHA256	1
+
 /*  ----------------------------------------------------------------------------
  *  JFFS2
  *  (OMAP3 EVM supports JFFS2 by default)
