@@ -61,6 +61,10 @@
 #include <linux/lzo.h>
 #endif /* CONFIG_LZO */
 
+#ifdef CONFIG_SHA256
+#include <sha256.h>
+#endif /* CONFIG_SHA256 */
+
 DECLARE_GLOBAL_DATA_PTR;
 
 #ifndef CONFIG_SYS_BOOTM_LEN
@@ -217,6 +221,10 @@ static int bootm_start(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]
 {
 	void		*os_hdr;
 	int		ret;
+#if defined(CONFIG_SHA256)
+	int		i;
+	unsigned char	sha_csum[32];
+#endif /* CONFIG_SHA256 */
 
 	memset ((void *)&images, 0, sizeof (images));
 	images.verify = getenv_yesno ("verify");
@@ -230,6 +238,13 @@ static int bootm_start(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]
 		puts ("ERROR: can't get kernel image!\n");
 		return 1;
 	}
+
+#if defined(CONFIG_SHA256)
+	sha256_csum((unsigned char*)load_addr, (int)(images.os.image_len + 64), sha_csum);
+	printf("SHA256: ");
+	for (i = 0; i < 32; i++)
+		printf("%x", sha_csum[i]);
+#endif	/* CONFIG_SHA256 */
 
 	/* get image parameters */
 	switch (genimg_get_format (os_hdr)) {
