@@ -21,6 +21,7 @@
 
 #include <common.h>
 #include <asm/arch/gpio.h>
+#include <lpc.h>
 
 #define LPC_CLK_GPIO		53
 #define LPC_LFRAME_GPIO		54
