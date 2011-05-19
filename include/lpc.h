@@ -21,13 +21,20 @@
 
 #include <common.h>
 
+#define LPC_START		0x0
+#define LPC_CYC_MEMREAD		0x4
+#define LPC_CYC_MEMWRITE	0x6
+#define LPC_SYNC_READY		0x0
+#define LPC_SYNC_SWAIT		0x5
+#define LPC_SYNC_LWAIT		0x6
+#define LPC_SYNC_ERROR		0xA
+
 static inline void set_clk(int is_on);
 static inline void set_lframe(int is_on);
 static inline void set_reset(int is_on);
 static inline void set_lad(unsigned char data);
 static inline unsigned char get_lad(void);
 
-static unsigned char mem_read(unsigned char addr);
-static int mem_write(unsigned char addr, unsigned char data);
-
+static unsigned char lpc_mem_read(unsigned int addr);
+static int lpc_mem_write(unsigned char addr, unsigned char data);
 
