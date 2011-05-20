@@ -31,33 +31,64 @@
 #define LPC_LAD1_GPIO		56
 #define LPC_LAD0_GPIO		55
 
-static inline void set_clk(int is_on)
+static int is_input = 0;
+
+void lpc_init(void)
+{
+	omap_set_gpio_direction(LPC_CLK_GPIO, 0);
+	omap_set_gpio_direction(LPC_LFRAME_GPIO, 0);
+	omap_set_gpio_direction(LPC_RESET_GPIO, 0);
+	omap_set_gpio_direction(LPC_LAD0_GPIO, 0);
+	omap_set_gpio_direction(LPC_LAD1_GPIO, 0);
+	omap_set_gpio_direction(LPC_LAD2_GPIO, 0);
+	omap_set_gpio_direction(LPC_LAD3_GPIO, 0);
+	lpc_set_reset(0);
+	udelay(5000);
+	lpc_set_reset(1);
+	udelay(5000);
+	is_input = 0;
+}
+void lpc_set_clk(int is_on)
 {
 	omap_set_gpio_dataout(LPC_CLK_GPIO, is_on);
 }
 
-static inline void set_lframe(int is_on)
+void lpc_set_lframe(int is_on)
 {
 	omap_set_gpio_dataout(LPC_LFRAME_GPIO, is_on);
 }
 
-static inline void set_reset(int is_on)
+void lpc_set_reset(int is_on)
 {
 	omap_set_gpio_dataout(LPC_RESET_GPIO, is_on);
 }
 
-static inline void set_lad(unsigned char data)
+void lpc_set_lad(unsigned char data)
 {
+	if (is_input) {
+		is_input = 0;
+		omap_set_gpio_direction(LPC_LAD0_GPIO, 0);
+		omap_set_gpio_direction(LPC_LAD1_GPIO, 0);
+		omap_set_gpio_direction(LPC_LAD2_GPIO, 0);
+		omap_set_gpio_direction(LPC_LAD3_GPIO, 0);
+	}
 	omap_set_gpio_dataout(LPC_LAD0_GPIO, (0x1 & data));
 	omap_set_gpio_dataout(LPC_LAD1_GPIO, ((0x2 & data) >> 1));
 	omap_set_gpio_dataout(LPC_LAD2_GPIO, ((0x4 & data) >> 2));
 	omap_set_gpio_dataout(LPC_LAD3_GPIO, ((0x8 & data) >> 3));
 }
 
-static inline unsigned char get_lad(void)
+unsigned char lpc_get_lad(void)
 {
 	unsigned char data = 0;
 
+	if (!is_input) {
+		is_input = 0;
+		omap_set_gpio_direction(LPC_LAD0_GPIO, 1);
+		omap_set_gpio_direction(LPC_LAD1_GPIO, 1);
+		omap_set_gpio_direction(LPC_LAD2_GPIO, 1);
+		omap_set_gpio_direction(LPC_LAD3_GPIO, 1);
+	}
 	data = omap_get_gpio_datain(LPC_LAD0_GPIO);
 	data = omap_get_gpio_datain(LPC_LAD1_GPIO) << 1;
 	data = omap_get_gpio_datain(LPC_LAD2_GPIO) << 2;
