@@ -23,76 +23,83 @@
 #include <command.h>
 #include <lpc.h>
 
-static void pulse_clk_out(int delay)
+#define mdelay(n)	udelay((n)*100000)
+
+void pulse_clk_out(int delay)
 {
 	udelay(delay);
-	set_clk(0);
+	lpc_set_clk(0);
 	udelay(delay);
-	set_clk(1);
+	lpc_set_clk(1);
 }
 
-static void pulse_clk_in(int delay)
+void pulse_clk_in(int delay)
 {
 	udelay(delay);
-	set_clk(1);
+	lpc_set_clk(1);
 	udelay(delay);
-	set_clk(0);
+	lpc_set_clk(0);
 }
 
-static unsigned char lpc_mem_read(unsigned int addr)
+unsigned char lpc_mem_read(unsigned int addr)
 {
 	unsigned char data;
+	int count = 0;
+
+	lpc_init();
 	/* START */
-	set_clk(1);
-	set_lframe(0);
-	set_lad(LPC_START);
+	lpc_set_clk(1);
+	lpc_set_lframe(0);
+	lpc_set_lad(LPC_START);
 	pulse_clk_out(2);
 
 
 	/* Cycle Type */
-	set_clk(1);
-	set_lframe(1);
-	set_lad(LPC_CYC_MEMREAD);
+	lpc_set_clk(1);
+	lpc_set_lframe(1);
+	lpc_set_lad(LPC_CYC_MEMREAD);
 	pulse_clk_out(2);
 
 	/* Address */
 
-	set_lad(0xf & (addr >> 28));
+	lpc_set_lad(0xf & (addr >> 28));
 	pulse_clk_out(2);
-	set_lad(0xf & (addr >> 24));
+	lpc_set_lad(0xf & (addr >> 24));
 	pulse_clk_out(2);
-	set_lad(0xf & (addr >> 20));
+	lpc_set_lad(0xf & (addr >> 20));
 	pulse_clk_out(2);
-	set_lad(0xf & (addr >> 16));
+	lpc_set_lad(0xf & (addr >> 16));
 	pulse_clk_out(2);
-	set_lad(0xf & (addr >> 12));
+	lpc_set_lad(0xf & (addr >> 12));
 	pulse_clk_out(2);
-	set_lad(0xf & (addr >> 8));
+	lpc_set_lad(0xf & (addr >> 8));
 	pulse_clk_out(2);
-	set_lad(0xf & (addr >> 4));
+	lpc_set_lad(0xf & (addr >> 4));
 	pulse_clk_out(2);
-	set_lad(0xf & (addr >> 0));
+	lpc_set_lad(0xf & (addr >> 0));
 	pulse_clk_out(2);
 
 	/* TAR */
 
-	set_lad(0xf);
+	lpc_set_lad(0xf);
 	pulse_clk_out(2);
 	pulse_clk_out(2);
 
 	/* Sync */
 
 	udelay(2);
-	set_clk(0);
-	while (get_lad() != LPC_SYNC_READY)
+	lpc_set_clk(0);
+	while (lpc_get_lad() != LPC_SYNC_READY || (count < 6)) {
 		pulse_clk_in(2);
+		count++;
+	}
 	return 0;
 
 	/* Data */
 	pulse_clk_in(2);
-	data = get_lad();
+	data = lpc_get_lad();
 	pulse_clk_in(2);
-	data |= get_lad() << 4;
+	data |= lpc_get_lad() << 4;
 
 	/* TAR */
 	pulse_clk_in(2);
@@ -101,55 +108,55 @@ static unsigned char lpc_mem_read(unsigned int addr)
 	return data;
 }
 
-static int lpc_mem_write(unsigned char addr, unsigned char data)
+int lpc_mem_write(unsigned char addr, unsigned char data)
 {
 	/* START */
-	set_clk(1);
-	set_lframe(0);
-	set_lad(LPC_START);
+	lpc_set_clk(1);
+	lpc_set_lframe(0);
+	lpc_set_lad(LPC_START);
 	pulse_clk_out(2);
 
 	/* Cycle Type */
-	set_lframe(1);
-	set_lad(LPC_CYC_MEMREAD);
+	lpc_set_lframe(1);
+	lpc_set_lad(LPC_CYC_MEMREAD);
 	pulse_clk_out(2);
 
 	/* Address */
 
-	set_lad(0xf & (addr >> 28));
+	lpc_set_lad(0xf & (addr >> 28));
 	pulse_clk_out(2);
-	set_lad(0xf & (addr >> 24));
+	lpc_set_lad(0xf & (addr >> 24));
 	pulse_clk_out(2);
-	set_lad(0xf & (addr >> 20));
+	lpc_set_lad(0xf & (addr >> 20));
 	pulse_clk_out(2);
-	set_lad(0xf & (addr >> 16));
+	lpc_set_lad(0xf & (addr >> 16));
 	pulse_clk_out(2);
-	set_lad(0xf & (addr >> 12));
+	lpc_set_lad(0xf & (addr >> 12));
 	pulse_clk_out(2);
-	set_lad(0xf & (addr >> 8));
+	lpc_set_lad(0xf & (addr >> 8));
 	pulse_clk_out(2);
-	set_lad(0xf & (addr >> 4));
+	lpc_set_lad(0xf & (addr >> 4));
 	pulse_clk_out(2);
-	set_lad(0xf & (addr >> 0));
+	lpc_set_lad(0xf & (addr >> 0));
 	pulse_clk_out(2);
 
 	/* Data */
 
-	set_lad(0xf & (data >> 0));
+	lpc_set_lad(0xf & (data >> 0));
 	pulse_clk_out(2);
-	set_lad(0xf & (data >> 4));
+	lpc_set_lad(0xf & (data >> 4));
 	pulse_clk_out(2);
 	/* TAR */
 
-	set_lad(0xf);
+	lpc_set_lad(0xf);
 	pulse_clk_out(2);
 	pulse_clk_out(2);
 
 	/* Sync */
 
 	udelay(2);
-	set_clk(0);
-	while (get_lad() != LPC_SYNC_READY)
+	lpc_set_clk(0);
+	while (lpc_get_lad() != LPC_SYNC_READY)
 		pulse_clk_in(2);
 	return 0;
 
@@ -162,23 +169,36 @@ static int lpc_mem_write(unsigned char addr, unsigned char data)
 
 int do_lpc (cmd_tbl_t *cmdtp, int flag, int argc, char* const argv[])
 {
-	switch (argc) {
-	case 2:
-		if (strcmp(argv[1], "mem_read") == 0) {
-			return 0;
-		}
-	case 3:
-		if (strcmp(argv[1], "mem_write") == 0) {
-			return 0;
-		}
+	unsigned int addr;
+	unsigned char data;
 
-	default:
+	printf("argc: %d\n", argc);
+
+	if (argc < 2)
 		return cmd_usage(cmdtp);
+	if (argc == 3) {
+		if (strcmp(argv[1], "read") == 0) {
+			printf("mem_read\n");
+			addr = (unsigned int)simple_strtoul(argv[2], NULL, 16);
+			data = lpc_mem_read(addr);
+			printf("LPC mem_read: 0x%x\n",data);
+			return 0;
+		}
+		else
+			return cmd_usage(cmdtp);
+	}
+	if (argc == 4) {
+		if (strcmp(argv[1], "write") == 0) {
+			printf("mem_write\n");
+			return 0;
+		}
+		else
+			return cmd_usage(cmdtp);
 	}
 }
 
 U_BOOT_CMD(
-	lpc, 3, 0, do_lpc,
+	lpc, 4, 0, do_lpc,
 	"LPC Subsystem",
-	"mem_read addr\n"
-	"mem_write addr data\n");
+	"read addr\n"
+	"lpc write addr data\n");

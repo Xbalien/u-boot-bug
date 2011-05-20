@@ -29,12 +29,13 @@
 #define LPC_SYNC_LWAIT		0x6
 #define LPC_SYNC_ERROR		0xA
 
-static inline void set_clk(int is_on);
-static inline void set_lframe(int is_on);
-static inline void set_reset(int is_on);
-static inline void set_lad(unsigned char data);
-static inline unsigned char get_lad(void);
+void lpc_init(void);
+inline void lpc_set_clk(int is_on);
+inline void lpc_set_lframe(int is_on);
+inline void lpc_set_reset(int is_on);
+inline void lpc_set_lad(unsigned char data);
+inline unsigned char lpc_get_lad(void);
 
-static unsigned char lpc_mem_read(unsigned int addr);
-static int lpc_mem_write(unsigned char addr, unsigned char data);
+unsigned char lpc_mem_read(unsigned int addr);
+int lpc_mem_write(unsigned char addr, unsigned char data);
 
