@@ -108,7 +108,7 @@ unsigned char lpc_mem_read(unsigned int addr)
 	return data;
 }
 
-int lpc_mem_write(unsigned char addr, unsigned char data)
+int lpc_mem_write(unsigned int addr, unsigned char data)
 {
 	/* START */
 	lpc_set_clk(1);
@@ -167,9 +167,120 @@ int lpc_mem_write(unsigned char addr, unsigned char data)
 	return data;
 }
 
+unsigned char lpc_io_read(unsigned short addr)
+{
+	unsigned char data;
+	int count = 0;
+
+	lpc_init();
+	/* START */
+	lpc_set_clk(1);
+	lpc_set_lframe(0);
+	lpc_set_lad(LPC_START);
+	pulse_clk_out(2);
+
+
+	/* Cycle Type */
+	lpc_set_clk(1);
+	lpc_set_lframe(1);
+	lpc_set_lad(LPC_CYC_IOREAD);
+	pulse_clk_out(2);
+
+	/* Address */
+
+	lpc_set_lad(0xf & (addr >> 12));
+	pulse_clk_out(2);
+	lpc_set_lad(0xf & (addr >> 8));
+	pulse_clk_out(2);
+	lpc_set_lad(0xf & (addr >> 4));
+	pulse_clk_out(2);
+	lpc_set_lad(0xf & (addr >> 0));
+	pulse_clk_out(2);
+
+	/* TAR */
+
+	lpc_set_lad(0xf);
+	pulse_clk_out(2);
+	pulse_clk_out(2);
+
+	/* Sync */
+
+	udelay(2);
+	lpc_set_clk(0);
+	while (lpc_get_lad() != LPC_SYNC_READY || (count < 6)) {
+		pulse_clk_in(2);
+		count++;
+	}
+	return 0;
+
+	/* Data */
+	pulse_clk_in(2);
+	data = lpc_get_lad();
+	pulse_clk_in(2);
+	data |= lpc_get_lad() << 4;
+
+	/* TAR */
+	pulse_clk_in(2);
+	pulse_clk_in(2);
+
+	return data;
+}
+
+int lpc_io_write(unsigned short addr, unsigned char data)
+{
+	/* START */
+	lpc_set_clk(1);
+	lpc_set_lframe(0);
+	lpc_set_lad(LPC_START);
+	pulse_clk_out(2);
+
+	/* Cycle Type */
+	lpc_set_lframe(1);
+	lpc_set_lad(LPC_CYC_IOREAD);
+	pulse_clk_out(2);
+
+	/* Address */
+
+	lpc_set_lad(0xf & (addr >> 12));
+	pulse_clk_out(2);
+	lpc_set_lad(0xf & (addr >> 8));
+	pulse_clk_out(2);
+	lpc_set_lad(0xf & (addr >> 4));
+	pulse_clk_out(2);
+	lpc_set_lad(0xf & (addr >> 0));
+	pulse_clk_out(2);
+
+	/* Data */
+
+	lpc_set_lad(0xf & (data >> 0));
+	pulse_clk_out(2);
+	lpc_set_lad(0xf & (data >> 4));
+	pulse_clk_out(2);
+	/* TAR */
+
+	lpc_set_lad(0xf);
+	pulse_clk_out(2);
+	pulse_clk_out(2);
+
+	/* Sync */
+
+	udelay(2);
+	lpc_set_clk(0);
+	while (lpc_get_lad() != LPC_SYNC_READY)
+		pulse_clk_in(2);
+	return 0;
+
+	/* TAR */
+	pulse_clk_in(2);
+	pulse_clk_in(2);
+
+	return data;
+}
+
 int do_lpc (cmd_tbl_t *cmdtp, int flag, int argc, char* const argv[])
 {
-	unsigned int addr;
+	unsigned int mem_addr;
+	unsigned short io_addr;
 	unsigned char data;
 
 	printf("argc: %d\n", argc);
@@ -177,19 +288,38 @@ int do_lpc (cmd_tbl_t *cmdtp, int flag, int argc, char* const argv[])
 	if (argc < 2)
 		return cmd_usage(cmdtp);
 	if (argc == 3) {
-		if (strcmp(argv[1], "read") == 0) {
+		if (strcmp(argv[1], "mem_read") == 0) {
 			printf("mem_read\n");
-			addr = (unsigned int)simple_strtoul(argv[2], NULL, 16);
-			data = lpc_mem_read(addr);
+			mem_addr = (unsigned int)simple_strtoul(argv[2], NULL, 16);
+			data = lpc_mem_read(mem_addr);
 			printf("LPC mem_read: 0x%x\n",data);
+			return 0;
+		}
+		else if (strcmp(argv[1], "io_read") == 0) {
+			printf("io_read\n");
+			io_addr = (unsigned short)simple_strtoul(argv[2], NULL, 16);
+			data = lpc_io_read(io_addr);
+			printf("LPC io_read: 0x%x\n",data);
 			return 0;
 		}
 		else
 			return cmd_usage(cmdtp);
 	}
 	if (argc == 4) {
-		if (strcmp(argv[1], "write") == 0) {
+		if (strcmp(argv[1], "mem_write") == 0) {
 			printf("mem_write\n");
+			mem_addr = (unsigned int)simple_strtoul(argv[2], NULL, 16);
+			data = (unsigned char)(0xf & simple_strtoul(argv[3], NULL, 16));
+			data = lpc_mem_write(mem_addr, data);
+			printf("LPC mem_write: 0x%x\n",data);
+			return 0;
+		}
+		else if (strcmp(argv[1], "io_write") == 0) {
+			printf("io_write\n");
+			io_addr = (unsigned short)simple_strtoul(argv[2], NULL, 16);
+			data = (unsigned char)(0xf & simple_strtoul(argv[3], NULL, 16));
+			data = lpc_io_write(io_addr, data);
+			printf("LPC mem_write: 0x%x\n",data);
 			return 0;
 		}
 		else
@@ -200,5 +330,5 @@ int do_lpc (cmd_tbl_t *cmdtp, int flag, int argc, char* const argv[])
 U_BOOT_CMD(
 	lpc, 4, 0, do_lpc,
 	"LPC Subsystem",
-	"read addr\n"
-	"lpc write addr data\n");
+	"mem_read addr\n"
+	"lpc mem_write addr data\n");

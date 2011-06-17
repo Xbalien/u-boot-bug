@@ -24,6 +24,9 @@
 #define LPC_START		0x0
 #define LPC_CYC_MEMREAD		0x4
 #define LPC_CYC_MEMWRITE	0x6
+#define LPC_CYC_IOREAD		0x0
+#define LPC_CYC_IOWRITE		0x2
+
 #define LPC_SYNC_READY		0x0
 #define LPC_SYNC_SWAIT		0x5
 #define LPC_SYNC_LWAIT		0x6
@@ -37,5 +40,8 @@ inline void lpc_set_lad(unsigned char data);
 inline unsigned char lpc_get_lad(void);
 
 unsigned char lpc_mem_read(unsigned int addr);
-int lpc_mem_write(unsigned char addr, unsigned char data);
+int lpc_mem_write(unsigned int addr, unsigned char data);
+unsigned char lpc_io_read(unsigned short addr);
+int lpc_io_write(unsigned short addr, unsigned char data);
+
 
