@@ -83,15 +83,15 @@ unsigned char lpc_get_lad(void)
 	unsigned char data = 0;
 
 	if (!is_input) {
-		is_input = 0;
+		is_input = 1;
 		omap_set_gpio_direction(LPC_LAD0_GPIO, 1);
 		omap_set_gpio_direction(LPC_LAD1_GPIO, 1);
 		omap_set_gpio_direction(LPC_LAD2_GPIO, 1);
 		omap_set_gpio_direction(LPC_LAD3_GPIO, 1);
 	}
 	data = omap_get_gpio_datain(LPC_LAD0_GPIO);
-	data = omap_get_gpio_datain(LPC_LAD1_GPIO) << 1;
-	data = omap_get_gpio_datain(LPC_LAD2_GPIO) << 2;
-	data = omap_get_gpio_datain(LPC_LAD3_GPIO) << 3;
-	return 0;
+	data |= omap_get_gpio_datain(LPC_LAD1_GPIO) << 1;
+	data |= omap_get_gpio_datain(LPC_LAD2_GPIO) << 2;
+	data |= omap_get_gpio_datain(LPC_LAD3_GPIO) << 3;
+	return data;
 }

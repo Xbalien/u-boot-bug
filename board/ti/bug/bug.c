@@ -75,7 +75,11 @@ int misc_init_r(void)
 					TWL4030_PM_RECEIVER_VAUX2_DEV_GRP,
 					TWL4030_PM_RECEIVER_DEV_GRP_P1);
 	twl4030_power_init();
-
+	omap_set_gpio_direction(186,0);
+	omap_set_gpio_dataout(186, 1);
+	udelay(10);
+	omap_set_gpio_direction(170,0);
+	omap_set_gpio_dataout(170, 1);
 	dieid_num_r();
 	return 0;
 }

@@ -91,7 +91,7 @@ unsigned char lpc_mem_read(unsigned int addr)
 
 	udelay(2);
 	lpc_set_clk(0);
-	while (lpc_get_lad() != LPC_SYNC_READY || (count < 20)) {
+	while (lpc_get_lad() != LPC_SYNC_READY && (count < 20)) {
 		pulse_clk_in(2);
 		count++;
 	}
@@ -162,7 +162,7 @@ int lpc_mem_write(unsigned int addr, unsigned char data)
 
 	udelay(2);
 	lpc_set_clk(0);
-	while ((lpc_get_lad() != LPC_SYNC_READY) || (count < 20)) {
+	while ((lpc_get_lad() != LPC_SYNC_READY) && (count < 20)) {
 		pulse_clk_in(2);
 		count++;
 	}
@@ -217,7 +217,7 @@ unsigned char lpc_io_read(unsigned short addr)
 
 	udelay(2);
 	lpc_set_clk(0);
-	while (lpc_get_lad() != LPC_SYNC_READY || (count < 20)) {
+	while (lpc_get_lad() != LPC_SYNC_READY && (count < 20)) {
 		pulse_clk_in(2);
 		count++;
 	}
@@ -241,6 +241,7 @@ unsigned char lpc_io_read(unsigned short addr)
 int lpc_io_write(unsigned short addr, unsigned char data)
 {
 	int count = 0;
+	unsigned char tmp;
 
 	lpc_init();
 	/* START */
@@ -266,7 +267,6 @@ int lpc_io_write(unsigned short addr, unsigned char data)
 	pulse_clk_out(2);
 
 	/* Data */
-
 	lpc_set_lad(0xf & (data >> 0));
 	pulse_clk_out(2);
 	lpc_set_lad(0xf & (data >> 4));
@@ -281,11 +281,10 @@ int lpc_io_write(unsigned short addr, unsigned char data)
 
 	udelay(2);
 	lpc_set_clk(0);
-	while ((lpc_get_lad() != LPC_SYNC_READY) || (count < 20)) {
+	while ((lpc_get_lad() != LPC_SYNC_READY) && (count < 20)) {
 		pulse_clk_in(2);
 		count++;
 	}
-
 	if (count >= 20)
 		printf("%s: No Sync detected.\n", __FUNCTION__);
 
@@ -336,7 +335,7 @@ int do_lpc (cmd_tbl_t *cmdtp, int flag, int argc, char* const argv[])
 		else if (strcmp(argv[1], "io_write") == 0) {
 			printf("io_write\n");
 			io_addr = (unsigned short)simple_strtoul(argv[2], NULL, 16);
-			data = (unsigned char)(0xf & simple_strtoul(argv[3], NULL, 16));
+			data = (unsigned char)(0xff & simple_strtoul(argv[3], NULL, 16));
 			data = lpc_io_write(io_addr, data);
 			printf("LPC io_write: 0x%x\n",data);
 			return 0;
